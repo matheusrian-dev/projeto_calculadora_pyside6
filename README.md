@@ -1,0 +1,1 @@
+# projeto_calculadora_pyside6
