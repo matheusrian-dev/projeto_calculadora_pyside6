@@ -1,10 +1,11 @@
 import sys
 
 from PySide6.QtWidgets import QApplication, QLabel
-from display import Display
+from ui.widgets import Display, Info
 from PySide6.QtGui import QIcon
-from main_window import MainWindow
-from paths import WINDOW_ICON_PATH_STR
+from ui.main_window import MainWindow
+from resources.paths import WINDOW_ICON_PATH_STR
+from ui.styles import setupTheme
 
 
 def temp_label(texto):
@@ -16,6 +17,10 @@ def temp_label(texto):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
+    setupTheme(app)
+
+    info = Info('2.0 ^ 10.0 = 1024')
+    window.addToVLayout(info)
 
     # É possível settar um texto inicial ao inserir
     # string no Display()
@@ -26,8 +31,6 @@ if __name__ == '__main__':
     icon = QIcon(WINDOW_ICON_PATH_STR)
     window.setWindowIcon(icon)
     app.setWindowIcon(icon)
-
-    window.addToVLayout(temp_label('Texto 1'))
 
     window.adjustFixedSize()
     window.show()

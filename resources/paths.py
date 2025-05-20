@@ -1,7 +1,8 @@
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).parent
-FILES_DIR = ROOT_DIR / 'files'
+PROJECT_ROOT = Path(__file__).parent.parent
+RESOURCES_DIR = Path(__file__).parent
+FILES_DIR = RESOURCES_DIR / 'files'
 WINDOW_ICON_PATH = FILES_DIR / 'icon-calculator.png'
 # Passar o path diretamente no PySide6 gerará um TypeError
 # que o VS Code não acusa, converta o path para str para
