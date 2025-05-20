@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.setWindowTitle('Calculadora')
 
-    def adjustFixedSize(self):
+    def adjust_fixed_size(self):
         # Última coisa a ser feita
         self.adjustSize()
         self.setFixedSize(self.width(), self.height())
@@ -24,5 +24,5 @@ class MainWindow(QMainWindow):
     # Não é uma boa prática manter acessos aninhados,
     # caso veja que há mais de um (objeto1.objeto2.funcao1),
     # crie um método para implementar esse acesso.
-    def addToVLayout(self, widget: QWidget):
+    def add_to_vlayout(self, widget: QWidget):
         self.v_layout.addWidget(widget)
