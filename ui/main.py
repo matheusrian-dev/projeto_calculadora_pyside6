@@ -1,11 +1,10 @@
 import sys
 
-from PySide6.QtWidgets import QApplication, QLabel
 from ui.widgets import Display, Info, Button
-from PySide6.QtGui import QIcon
 from ui.main_window import MainWindow
 from resources.paths import WINDOW_ICON_PATH_STR
 from ui.styles import setup_theme
+from ui.imports import QApplication, QLabel, QIcon  # noqa
 
 
 def temp_label(texto):

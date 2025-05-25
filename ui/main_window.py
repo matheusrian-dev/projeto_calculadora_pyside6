@@ -1,8 +1,4 @@
-from PySide6.QtWidgets import (
-    QMainWindow,
-    QVBoxLayout,
-    QWidget,
-)
+from ui.imports import QMainWindow, QVBoxLayout, QWidget  # noqa
 
 
 class MainWindow(QMainWindow):

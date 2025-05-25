@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLineEdit, QLabel, QPushButton
+from ui.imports import QLineEdit, QLabel, QPushButton, Qt  # noqa
 from ui.constants import (
     BIG_FONT_SIZE,
     SMALL_FONT_SIZE,
@@ -6,7 +6,6 @@ from ui.constants import (
     TEXT_MARGIN,
     MINIMUM_WIDTH,
 )
-from PySide6.QtCore import Qt
 
 
 # Caixa de texto de linha única
