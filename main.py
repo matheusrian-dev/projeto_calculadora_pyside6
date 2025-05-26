@@ -1,6 +1,6 @@
 import sys
 
-from ui.widgets import Display, Info, Button
+from ui.widgets import Display, Info, ButtonsGrid
 from ui.main_window import MainWindow
 from resources.paths import WINDOW_ICON_PATH_STR
 from ui.styles import setup_theme
@@ -19,16 +19,16 @@ if __name__ == '__main__':
     setup_theme(app)
 
     info = Info('2.0 ^ 10.0 = 1024')
-    window.add_to_vlayout(info)
+    window.add_widget_to_vlayout(info)
 
     # É possível settar um texto inicial ao inserir
     # string no Display()
     display = Display()
     display.setPlaceholderText('Digite alguma coisa')
-    window.add_to_vlayout(display)
+    window.add_widget_to_vlayout(display)
 
-    button = Button('Texto do botão')
-    window.add_to_vlayout(button)
+    buttons_grid = ButtonsGrid()
+    window.v_layout.addLayout(buttons_grid)
 
     icon = QIcon(WINDOW_ICON_PATH_STR)
     window.setWindowIcon(icon)

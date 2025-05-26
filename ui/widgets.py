@@ -1,4 +1,4 @@
-from ui.imports import QLineEdit, QLabel, QPushButton, Qt  # noqa
+from ui.imports import QLineEdit, QLabel, QPushButton, QGridLayout, Qt  # noqa
 from ui.constants import (
     BIG_FONT_SIZE,
     SMALL_FONT_SIZE,
@@ -6,6 +6,7 @@ from ui.constants import (
     TEXT_MARGIN,
     MINIMUM_WIDTH,
 )
+from utils import is_num_or_dot, is_empty
 
 
 # Caixa de texto de linha única
@@ -51,5 +52,30 @@ class Button(QPushButton):
         font = self.font()
         font.setPixelSize(MEDIUM_FONT_SIZE)
         self.setFont(font)
-        self.setProperty('cssClass', 'specialButton')
         self.setMinimumSize(75, 75)
+
+
+class ButtonsGrid(QGridLayout):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self._grid_mask = [
+            ['C', '◄', '^', '/'],
+            ['7', '8', '9', '*'],
+            ['4', '5', '6', '-'],
+            ['1', '2', '3', '+'],
+            ['', '0', '.', '='],
+        ]
+
+        self._makegrid()
+
+    def _makegrid(self):
+        for row_number, row in enumerate(self._grid_mask):
+            for column_number, button_text in enumerate(row):
+                button = Button(button_text)
+                self.addWidget(button, row_number, column_number)
+
+                if not is_num_or_dot(button_text) and not is_empty(
+                    button_text
+                ):
+                    button.setProperty('cssClass', 'specialButton')

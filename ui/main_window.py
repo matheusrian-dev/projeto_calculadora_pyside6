@@ -20,5 +20,5 @@ class MainWindow(QMainWindow):
     # Não é uma boa prática manter acessos aninhados,
     # caso veja que há mais de um (objeto1.objeto2.funcao1),
     # crie um método para implementar esse acesso.
-    def add_to_vlayout(self, widget: QWidget):
+    def add_widget_to_vlayout(self, widget: QWidget):
         self.v_layout.addWidget(widget)
