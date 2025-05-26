@@ -1,4 +1,11 @@
-from ui.imports import QLineEdit, QLabel, QPushButton, QGridLayout, Qt  # noqa
+from ui.imports import (
+    QLineEdit,
+    QLabel,
+    QPushButton,
+    QGridLayout,
+    Slot,
+    Qt,
+)  # noqa
 from ui.constants import (
     BIG_FONT_SIZE,
     SMALL_FONT_SIZE,
@@ -56,7 +63,7 @@ class Button(QPushButton):
 
 
 class ButtonsGrid(QGridLayout):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, display: Display, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self._grid_mask = [
@@ -66,7 +73,7 @@ class ButtonsGrid(QGridLayout):
             ['1', '2', '3', '+'],
             ['', '0', '.', '='],
         ]
-
+        self.display = display
         self._makegrid()
 
     def _makegrid(self):
@@ -79,3 +86,18 @@ class ButtonsGrid(QGridLayout):
                     button_text
                 ):
                     button.setProperty('cssClass', 'specialButton')
+                button_slot = self._set_button_display_slot(
+                    self._insert_button_text_to_display,
+                    button,
+                )
+                button.clicked.connect(button_slot)
+
+    def _set_button_display_slot(self, func, *args, **kwargs):
+        @Slot(bool)
+        def realSlot(_):
+            func(*args, **kwargs)
+
+        return realSlot
+
+    def _insert_button_text_to_display(self, button):
+        self.display.setText(button.text())

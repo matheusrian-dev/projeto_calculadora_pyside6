@@ -27,7 +27,7 @@ if __name__ == '__main__':
     display.setPlaceholderText('Digite alguma coisa')
     window.add_widget_to_vlayout(display)
 
-    buttons_grid = ButtonsGrid()
+    buttons_grid = ButtonsGrid(display)
     window.v_layout.addLayout(buttons_grid)
 
     icon = QIcon(WINDOW_ICON_PATH_STR)
