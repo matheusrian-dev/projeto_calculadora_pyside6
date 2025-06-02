@@ -13,7 +13,7 @@ from ui.constants import (
     TEXT_MARGIN,
     MINIMUM_WIDTH,
 )
-from utils import is_num_or_dot, is_empty
+from utils import is_num_or_dot, is_empty, is_valid_number
 
 
 # Caixa de texto de linha única
@@ -63,7 +63,7 @@ class Button(QPushButton):
 
 
 class ButtonsGrid(QGridLayout):
-    def __init__(self, display: Display, *args, **kwargs) -> None:
+    def __init__(self, display: Display, info, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self._grid_mask = [
@@ -74,9 +74,20 @@ class ButtonsGrid(QGridLayout):
             ['', '0', '.', '='],
         ]
         self.display = display
-        self._makegrid()
+        self.info = info
+        self._equation = ''
+        self._make_grid()
 
-    def _makegrid(self):
+    @property
+    def equation(self):
+        return self._equation
+
+    @equation.setter
+    def equation(self, value):
+        self._equation = value
+        self.info.setText(value)
+
+    def _make_grid(self):
         for row_number, row in enumerate(self._grid_mask):
             for column_number, button_text in enumerate(row):
                 button = Button(button_text)
@@ -100,4 +111,10 @@ class ButtonsGrid(QGridLayout):
         return realSlot
 
     def _insert_button_text_to_display(self, button):
-        self.display.setText(button.text())
+        button_text = button.text()
+        new_display_value = self.display.text() + button_text
+
+        if not is_valid_number(new_display_value):
+            return
+
+        self.display.setText(new_display_value)

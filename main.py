@@ -18,7 +18,7 @@ if __name__ == '__main__':
     window = MainWindow()
     setup_theme(app)
 
-    info = Info('2.0 ^ 10.0 = 1024')
+    info = Info('Sua conta')
     window.add_widget_to_vlayout(info)
 
     # É possível settar um texto inicial ao inserir
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     display.setPlaceholderText('Digite alguma coisa')
     window.add_widget_to_vlayout(display)
 
-    buttons_grid = ButtonsGrid(display)
+    buttons_grid = ButtonsGrid(display, info)
     window.v_layout.addLayout(buttons_grid)
 
     icon = QIcon(WINDOW_ICON_PATH_STR)
