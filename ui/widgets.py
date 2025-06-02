@@ -76,6 +76,11 @@ class ButtonsGrid(QGridLayout):
         self.display = display
         self.info = info
         self._equation = ''
+        self._equation_initial_value = 'Sua conta'
+        self._left = None
+        self._right = None
+        self._op = None
+        self.equation = self._equation_initial_value
         self._make_grid()
 
     @property
@@ -97,13 +102,27 @@ class ButtonsGrid(QGridLayout):
                     button_text
                 ):
                     button.setProperty('cssClass', 'specialButton')
-                button_slot = self._set_button_display_slot(
+                    self._config_special_button(button)
+                slot = self._set_display_slot(
                     self._insert_button_text_to_display,
                     button,
                 )
-                button.clicked.connect(button_slot)
+                self._connect_button_clicked(button, slot)
 
-    def _set_button_display_slot(self, func, *args, **kwargs):
+    def _connect_button_clicked(self, button, slot):
+        button.clicked.connect(slot)
+
+    def _config_special_button(self, button):
+        text = button.text()
+        if text == 'C':
+            self._connect_button_clicked(button, self._clear)
+
+        if text in '+-/*':
+            self._connect_button_clicked(
+                button, self._set_display_slot(self._operator_clicked, button)
+            )
+
+    def _set_display_slot(self, func, *args, **kwargs):
         @Slot(bool)
         def realSlot(_):
             func(*args, **kwargs)
@@ -118,3 +137,26 @@ class ButtonsGrid(QGridLayout):
             return
 
         self.display.setText(new_display_value)
+
+    def _clear(self):
+        self._left = None
+        self._right = None
+        self._op = None
+        # reseta a label que exibe a equação
+        self.equation = self._equation_initial_value
+        self.display.clear()
+
+    def _operator_clicked(self, button):
+        button_text = button.text()  # +-/*
+        display_text = self.display.text()  # número _left
+        self.display.clear()
+
+        if not is_valid_number(display_text) and self._left is None:
+            print('Não foi inserido nenhum valor antes do operador.')
+            return
+
+        if self._left is None:
+            self._left = float(display_text)
+
+        self._op = button_text
+        self.equation = f'{self._left} {self._op} ??'
