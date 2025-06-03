@@ -122,6 +122,9 @@ class ButtonsGrid(QGridLayout):
                 button, self._set_display_slot(self._operator_clicked, button)
             )
 
+        if text in '=':
+            self._connect_button_clicked(button, self._eq)
+
     def _set_display_slot(self, func, *args, **kwargs):
         @Slot(bool)
         def realSlot(_):
@@ -160,3 +163,23 @@ class ButtonsGrid(QGridLayout):
 
         self._op = button_text
         self.equation = f'{self._left} {self._op} ??'
+
+    def _eq(self):
+        display_text = self.display.text()
+
+        if not is_valid_number(display_text):
+            print('nada válido para acrescentar')
+            return
+
+        self._right = float(display_text)
+        self.equation = f'{self._left} {self._op} {self._right}'
+        result = 0.0
+        try:
+            result = eval(self.equation)
+            self.info.setText(f'{self.equation} = {result}')
+        except ZeroDivisionError:
+            result = 'Não é possível dividir números por zero.'
+            self.info.setText(result)
+        self.display.clear()
+        self._left = result
+        self._right = None
