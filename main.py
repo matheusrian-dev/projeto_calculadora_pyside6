@@ -4,7 +4,7 @@ from ui.widgets import Display, Info, ButtonsGrid
 from ui.main_window import MainWindow
 from resources.paths import WINDOW_ICON_PATH_STR
 from ui.styles import setup_theme
-from ui.imports import QApplication, QLabel, QIcon  # noqa
+from ui.imports import QApplication, QLabel, QIcon, QMessageBox  # noqa
 
 
 def temp_label(texto):
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     display.setPlaceholderText('Digite alguma coisa')
     window.add_widget_to_vlayout(display)
 
-    buttons_grid = ButtonsGrid(display, info)
+    buttons_grid = ButtonsGrid(display, info, window)
     window.v_layout.addLayout(buttons_grid)
 
     icon = QIcon(WINDOW_ICON_PATH_STR)

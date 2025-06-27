@@ -14,6 +14,11 @@ from ui.constants import (
     MINIMUM_WIDTH,
 )
 from utils import is_num_or_dot, is_empty, is_valid_number
+import math
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from main_window import MainWindow
 
 
 # Caixa de texto de linha única
@@ -63,7 +68,14 @@ class Button(QPushButton):
 
 
 class ButtonsGrid(QGridLayout):
-    def __init__(self, display: Display, info, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        display: Display,
+        info,
+        window: 'MainWindow',
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self._grid_mask = [
@@ -75,6 +87,7 @@ class ButtonsGrid(QGridLayout):
         ]
         self.display = display
         self.info = info
+        self.window = window
         self._equation = ''
         self._equation_initial_value = 'Sua conta'
         self._left = None
@@ -117,7 +130,10 @@ class ButtonsGrid(QGridLayout):
         if text == 'C':
             self._connect_button_clicked(button, self._clear)
 
-        if text in '+-/*':
+        if text == '◄':
+            self._connect_button_clicked(button, self.display.backspace)
+
+        if text in '+-/*^':
             self._connect_button_clicked(
                 button, self._set_display_slot(self._operator_clicked, button)
             )
@@ -155,7 +171,7 @@ class ButtonsGrid(QGridLayout):
         self.display.clear()
 
         if not is_valid_number(display_text) and self._left is None:
-            print('Não foi inserido nenhum valor antes do operador.')
+            self._showError('Não foi inserido nenhum valor antes do operador.')
             return
 
         if self._left is None:
@@ -168,18 +184,30 @@ class ButtonsGrid(QGridLayout):
         display_text = self.display.text()
 
         if not is_valid_number(display_text):
-            print('nada válido para acrescentar')
+            self._showError('Você não digitou nada.')
             return
 
         self._right = float(display_text)
         self.equation = f'{self._left} {self._op} {self._right}'
-        result = 0.0
+        result = 'error'
         try:
-            result = eval(self.equation)
+            if '^' in self.equation and isinstance(self._left, float):
+                result = math.pow(self._left, self._right)
+            else:
+                result = eval(self.equation)
             self.info.setText(f'{self.equation} = {result}')
         except ZeroDivisionError:
-            result = 'Não é possível dividir números por zero.'
-            self.info.setText(result)
+            self._showError('Não é possível dividir números por zero.')
+
+        except OverflowError:
+            self._showError('Overflow: Número muito grande')
         self.display.clear()
         self._left = result
         self._right = None
+        if result == 'error':
+            self._left = None
+
+    def _showError(self, text):
+        msgBox = self.window.makeMsgBox()
+        msgBox.setText(text)
+        msgBox.exec()

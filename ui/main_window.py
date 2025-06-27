@@ -1,4 +1,4 @@
-from ui.imports import QMainWindow, QVBoxLayout, QWidget  # noqa
+from ui.imports import QMainWindow, QVBoxLayout, QWidget, QMessageBox  # noqa
 
 
 class MainWindow(QMainWindow):
@@ -22,3 +22,6 @@ class MainWindow(QMainWindow):
     # crie um método para implementar esse acesso.
     def add_widget_to_vlayout(self, widget: QWidget):
         self.v_layout.addWidget(widget)
+
+    def makeMsgBox(self):
+        return QMessageBox(self)
