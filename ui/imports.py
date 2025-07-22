@@ -10,9 +10,9 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QKeyEvent
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, Signal
 
 # variável apenas para explicitar ao interpretador
 # que os imports serão utilizados externamente.
@@ -29,4 +29,6 @@ __all__ = [
     "QGridLayout",
     "Slot",
     "QMessageBox",
+    "QKeyEvent",
+    "Signal",
 ]

@@ -5,6 +5,8 @@ from ui.imports import (
     QGridLayout,
     Slot,
     Qt,
+    QKeyEvent,
+    Signal,
 )  # noqa
 from ui.constants import (
     BIG_FONT_SIZE,
@@ -20,6 +22,10 @@ import math
 
 # Caixa de texto de linha única
 class Display(QLineEdit):
+    eq_pressed = Signal()
+    del_pressed = Signal()
+    clear_pressed = Signal()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.config_style()
@@ -32,6 +38,33 @@ class Display(QLineEdit):
         self.setMinimumWidth(MINIMUM_WIDTH)
         self.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.setTextMargins(*margins)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        text = event.text().strip()
+        key = event.key()
+        KEYS = Qt.Key
+
+        isEnter = key in [KEYS.Key_Enter, KEYS.Key_Return]
+        isDelete = key in [KEYS.Key_Backspace, KEYS.Key_Delete]
+        isEsc = key in [KEYS.Key_Escape]
+
+        if isEnter:
+            self.eq_pressed.emit()
+            return event.ignore()
+        if isDelete:
+            self.del_pressed.emit()
+            return event.ignore()
+        if isEsc:
+            self.clear_pressed.emit()
+            return event.ignore()
+        # Lembre-se que caso não retorne o evento da superclasse,
+        # nenhum imput é confirmado, apenas registrado conforme o
+        # código antes disso.
+        # return super().keyPressEvent(event)
+
+        if is_empty(text):
+            return event.ignore()
+        print('Texto', text)
 
 
 # Label com informações não editáveis pelo usuário
@@ -98,7 +131,14 @@ class ButtonsGrid(QGridLayout):
         self._equation = value
         self.info.setText(value)
 
+    def vou_apagar_voce(self):
+        print('Signal recebido por "vou_apagar_voce" em', type(self).__name__)
+
     def _make_grid(self):
+        self.display.eq_pressed.connect(self.vou_apagar_voce)
+        self.display.del_pressed.connect(self.display.backspace)
+        self.display.clear_pressed.connect(self.vou_apagar_voce)
+
         for row_number, row in enumerate(self._grid_mask):
             for column_number, button_text in enumerate(row):
                 button = Button(button_text)
@@ -131,7 +171,7 @@ class ButtonsGrid(QGridLayout):
                 button, self._set_display_slot(self._operator_clicked, button)
             )
 
-        if text in '=':
+        if text == '=':
             self._connect_button_clicked(button, self._eq)
 
     def _set_display_slot(self, func, *args, **kwargs):
@@ -192,15 +232,24 @@ class ButtonsGrid(QGridLayout):
                 result = eval(self.equation)
             self.info.setText(f'{self.equation} = {result}')
         except ZeroDivisionError:
-            result = 'Não é possível dividir números por zero.'
+            result = None
             self.info.setText(result)
+            self._show_error('Não é possível dividir números por zero.')
+        except OverflowError:
+            result = None
+            self.info.setText(result)
+            self._show_error('A conta não pode ser realizada.')
         self.display.clear()
         self._left = result
         self._right = None
 
-    def _show_error(self, text):
+    def _make_dialog(self, text):
         msgBox = self.window.makeMsgBox()
         msgBox.setText(text)
+        return msgBox
+
+    def _show_error(self, text):
+        msgBox = self._make_dialog(text)
         msgBox.setIcon(msgBox.Icon.Critical)
         # Texto informatico dentro da msgBox
         # msgBox.setInformativeText('A descrição do erro será inserida aqui.')
@@ -218,3 +267,8 @@ class ButtonsGrid(QGridLayout):
 
         # elif result == msgBox.StandardButton.Cancel:
         #     print('Usuário clicou em cancelar')
+
+    def _show_info(self, text):
+        msgBox = self._make_dialog(text)
+        msgBox.setIcon(msgBox.Icon.Information)
+        msgBox.exec()
