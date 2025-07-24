@@ -14,11 +14,8 @@ from ui.constants import (
     MINIMUM_WIDTH,
 )
 from utils import is_num_or_dot, is_empty, is_valid_number
+from ui.main_window import MainWindow
 import math
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from main_window import MainWindow
 
 
 # Caixa de texto de linha única
@@ -69,12 +66,7 @@ class Button(QPushButton):
 
 class ButtonsGrid(QGridLayout):
     def __init__(
-        self,
-        display: Display,
-        info,
-        window: 'MainWindow',
-        *args,
-        **kwargs,
+        self, display: Display, info, window: 'MainWindow', *args, **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
 
@@ -87,6 +79,7 @@ class ButtonsGrid(QGridLayout):
         ]
         self.display = display
         self.info = info
+        self.window = window
         self.window = window
         self._equation = ''
         self._equation_initial_value = 'Sua conta'
@@ -171,7 +164,9 @@ class ButtonsGrid(QGridLayout):
         self.display.clear()
 
         if not is_valid_number(display_text) and self._left is None:
-            self._showError('Não foi inserido nenhum valor antes do operador.')
+            self._show_error(
+                'Não foi inserido nenhum valor antes do operador.'
+            )
             return
 
         if self._left is None:
@@ -184,7 +179,7 @@ class ButtonsGrid(QGridLayout):
         display_text = self.display.text()
 
         if not is_valid_number(display_text):
-            self._showError('Você não digitou nada.')
+            self._show_error('nada válido para acrescentar')
             return
 
         self._right = float(display_text)
@@ -197,17 +192,29 @@ class ButtonsGrid(QGridLayout):
                 result = eval(self.equation)
             self.info.setText(f'{self.equation} = {result}')
         except ZeroDivisionError:
-            self._showError('Não é possível dividir números por zero.')
-
-        except OverflowError:
-            self._showError('Overflow: Número muito grande')
+            result = 'Não é possível dividir números por zero.'
+            self.info.setText(result)
         self.display.clear()
         self._left = result
         self._right = None
-        if result == 'error':
-            self._left = None
 
-    def _showError(self, text):
+    def _show_error(self, text):
         msgBox = self.window.makeMsgBox()
         msgBox.setText(text)
+        msgBox.setIcon(msgBox.Icon.Critical)
+        # Texto informatico dentro da msgBox
+        # msgBox.setInformativeText('A descrição do erro será inserida aqui.')
+        # Inserir botões alternativos na msgBox
+        # msgBox.setStandardButtons(
+        #     msgBox.StandardButton.Apply | msgBox.StandardButton.Cancel
+        # )
+        # Método padrão caso queira alterar o texto do button
+        # msgBox.button(msgBox.StandardButton.Apply).setText('Aplicar')
+        # msgBox.button(msgBox.StandardButton.Cancel).setText('Cancelar')
         msgBox.exec()
+        # Verificando em qual botão o usuário clicou
+        # if result == msgBox.StandardButton.Apply:
+        #     print('Usuário clicou em aplicar')
+
+        # elif result == msgBox.StandardButton.Cancel:
+        #     print('Usuário clicou em cancelar')
