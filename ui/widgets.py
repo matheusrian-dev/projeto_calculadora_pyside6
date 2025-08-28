@@ -25,6 +25,7 @@ class Display(QLineEdit):
     eq_pressed = Signal()
     del_pressed = Signal()
     clear_pressed = Signal()
+    input_pressed = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,9 +45,9 @@ class Display(QLineEdit):
         key = event.key()
         KEYS = Qt.Key
 
-        isEnter = key in [KEYS.Key_Enter, KEYS.Key_Return]
-        isDelete = key in [KEYS.Key_Backspace, KEYS.Key_Delete]
-        isEsc = key in [KEYS.Key_Escape]
+        isEnter = key in [KEYS.Key_Enter, KEYS.Key_Return, KEYS.Key_Equal]
+        isDelete = key in [KEYS.Key_Backspace, KEYS.Key_Delete, KEYS.Key_D]
+        isEsc = key in [KEYS.Key_Escape, KEYS.Key_C]
 
         if isEnter:
             self.eq_pressed.emit()
@@ -64,7 +65,11 @@ class Display(QLineEdit):
 
         if is_empty(text):
             return event.ignore()
-        print('Texto', text)
+
+        if is_num_or_dot(text):
+            print(text)
+            self.input_pressed.emit(text)
+            return event.ignore()
 
 
 # Label com informações não editáveis pelo usuário
@@ -131,13 +136,18 @@ class ButtonsGrid(QGridLayout):
         self._equation = value
         self.info.setText(value)
 
-    def vou_apagar_voce(self):
-        print('Signal recebido por "vou_apagar_voce" em', type(self).__name__)
+    def vou_apagar_voce(self, *args):
+        print(
+            'Signal recebido por "vou_apagar_voce" em',
+            type(self).__name__,
+            args,
+        )
 
     def _make_grid(self):
         self.display.eq_pressed.connect(self.vou_apagar_voce)
         self.display.del_pressed.connect(self.display.backspace)
         self.display.clear_pressed.connect(self.vou_apagar_voce)
+        self.display.input_pressed.connect(self.vou_apagar_voce)
 
         for row_number, row in enumerate(self._grid_mask):
             for column_number, button_text in enumerate(row):
