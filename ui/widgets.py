@@ -26,6 +26,7 @@ class Display(QLineEdit):
     del_pressed = Signal()
     clear_pressed = Signal()
     input_pressed = Signal(str)
+    operator_pressed = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,19 +46,33 @@ class Display(QLineEdit):
         key = event.key()
         KEYS = Qt.Key
 
-        isEnter = key in [KEYS.Key_Enter, KEYS.Key_Return, KEYS.Key_Equal]
-        isDelete = key in [KEYS.Key_Backspace, KEYS.Key_Delete, KEYS.Key_D]
-        isEsc = key in [KEYS.Key_Escape, KEYS.Key_C]
+        is_enter = key in [KEYS.Key_Enter, KEYS.Key_Return, KEYS.Key_Equal]
+        is_delete = key in [KEYS.Key_Backspace, KEYS.Key_Delete, KEYS.Key_D]
+        is_esc = key in [KEYS.Key_Escape, KEYS.Key_C]
+        is_operator = key in [
+            KEYS.Key_Plus,
+            KEYS.Key_Minus,
+            KEYS.Key_Slash,
+            KEYS.Key_Asterisk,
+            KEYS.Key_AsciiCircum,
+            KEYS.Key_P,
+        ]
 
-        if isEnter:
+        if is_enter:
             self.eq_pressed.emit()
             return event.ignore()
-        if isDelete:
+        if is_delete:
             self.del_pressed.emit()
             return event.ignore()
-        if isEsc:
+        if is_esc:
             self.clear_pressed.emit()
             return event.ignore()
+        if is_operator:
+            if text.lower() == 'p':
+                text = '^'
+            self.operator_pressed.emit(text)
+            return event.ignore()
+        # Lembre-se que caso não retorne o evento da superclasse,
         # Lembre-se que caso não retorne o evento da superclasse,
         # nenhum imput é confirmado, apenas registrado conforme o
         # código antes disso.
@@ -67,7 +82,6 @@ class Display(QLineEdit):
             return event.ignore()
 
         if is_num_or_dot(text):
-            print(text)
             self.input_pressed.emit(text)
             return event.ignore()
 
@@ -136,18 +150,12 @@ class ButtonsGrid(QGridLayout):
         self._equation = value
         self.info.setText(value)
 
-    def vou_apagar_voce(self, *args):
-        print(
-            'Signal recebido por "vou_apagar_voce" em',
-            type(self).__name__,
-            args,
-        )
-
     def _make_grid(self):
-        self.display.eq_pressed.connect(self.vou_apagar_voce)
+        self.display.eq_pressed.connect(self._eq)
         self.display.del_pressed.connect(self.display.backspace)
-        self.display.clear_pressed.connect(self.vou_apagar_voce)
-        self.display.input_pressed.connect(self.vou_apagar_voce)
+        self.display.clear_pressed.connect(self._clear)
+        self.display.input_pressed.connect(self._insert_to_display)
+        self.display.operator_pressed.connect(self._config_left_op)
 
         for row_number, row in enumerate(self._grid_mask):
             for column_number, button_text in enumerate(row):
@@ -160,8 +168,8 @@ class ButtonsGrid(QGridLayout):
                     button.setProperty('cssClass', 'specialButton')
                     self._config_special_button(button)
                 slot = self._set_display_slot(
-                    self._insert_button_text_to_display,
-                    button,
+                    self._insert_to_display,
+                    button_text,
                 )
                 self._connect_button_clicked(button, slot)
 
@@ -178,7 +186,7 @@ class ButtonsGrid(QGridLayout):
 
         if text in '+-/*^':
             self._connect_button_clicked(
-                button, self._set_display_slot(self._operator_clicked, button)
+                button, self._set_display_slot(self._config_left_op, text)
             )
 
         if text == '=':
@@ -191,15 +199,16 @@ class ButtonsGrid(QGridLayout):
 
         return realSlot
 
-    def _insert_button_text_to_display(self, button):
-        button_text = button.text()
-        new_display_value = self.display.text() + button_text
+    @Slot()
+    def _insert_to_display(self, text):
+        new_display_value = self.display.text() + text
 
         if not is_valid_number(new_display_value):
             return
 
         self.display.setText(new_display_value)
 
+    @Slot()
     def _clear(self):
         self._left = None
         self._right = None
@@ -208,8 +217,8 @@ class ButtonsGrid(QGridLayout):
         self.equation = self._equation_initial_value
         self.display.clear()
 
-    def _operator_clicked(self, button):
-        button_text = button.text()  # +-/*
+    @Slot()
+    def _config_left_op(self, text):
         display_text = self.display.text()  # número _left
         self.display.clear()
 
@@ -222,9 +231,10 @@ class ButtonsGrid(QGridLayout):
         if self._left is None:
             self._left = float(display_text)
 
-        self._op = button_text
+        self._op = text
         self.equation = f'{self._left} {self._op} ??'
 
+    @Slot()
     def _eq(self):
         display_text = self.display.text()
 
