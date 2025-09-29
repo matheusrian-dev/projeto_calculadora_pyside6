@@ -15,7 +15,7 @@ from ui.constants import (
     TEXT_MARGIN,
     MINIMUM_WIDTH,
 )
-from utils import is_num_or_dot, is_empty, is_valid_number
+from utils import is_num_or_dot, is_empty, is_valid_number, convert_to_number
 from ui.main_window import MainWindow
 import math
 
@@ -127,7 +127,7 @@ class ButtonsGrid(QGridLayout):
             ['7', '8', '9', '*'],
             ['4', '5', '6', '-'],
             ['1', '2', '3', '+'],
-            ['', '0', '.', '='],
+            ['N', '0', '.', '='],
         ]
         self.display = display
         self.info = info
@@ -181,6 +181,9 @@ class ButtonsGrid(QGridLayout):
         if text == 'C':
             self._connect_button_clicked(button, self._clear)
 
+        if text == 'N':
+            self._connect_button_clicked(button, self._invert_number)
+
         if text == '◄':
             self._connect_button_clicked(button, self.display.backspace)
 
@@ -198,6 +201,17 @@ class ButtonsGrid(QGridLayout):
             func(*args, **kwargs)
 
         return realSlot
+
+    @Slot()
+    def _invert_number(self):
+        display_text = self.display.text()
+
+        if not is_valid_number(display_text):
+            return
+
+        number = convert_to_number(display_text) * -1
+
+        self.display.setText(str(number))
 
     @Slot()
     def _insert_to_display(self, text):
