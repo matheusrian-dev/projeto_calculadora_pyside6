@@ -152,7 +152,7 @@ class ButtonsGrid(QGridLayout):
 
     def _make_grid(self):
         self.display.eq_pressed.connect(self._eq)
-        self.display.del_pressed.connect(self.display.backspace)
+        self.display.del_pressed.connect(self._backspace)
         self.display.clear_pressed.connect(self._clear)
         self.display.input_pressed.connect(self._insert_to_display)
         self.display.operator_pressed.connect(self._config_left_op)
@@ -185,7 +185,7 @@ class ButtonsGrid(QGridLayout):
             self._connect_button_clicked(button, self._invert_number)
 
         if text == '◄':
-            self._connect_button_clicked(button, self.display.backspace)
+            self._connect_button_clicked(button, self._backspace)
 
         if text in '+-/*^':
             self._connect_button_clicked(
@@ -195,10 +195,14 @@ class ButtonsGrid(QGridLayout):
         if text == '=':
             self._connect_button_clicked(button, self._eq)
 
+        self._connect_button_clicked(button, self.display.setFocus)
+
     def _set_display_slot(self, func, *args, **kwargs):
         @Slot(bool)
         def realSlot(_):
             func(*args, **kwargs)
+
+        self.display.setFocus()
 
         return realSlot
 
@@ -221,6 +225,7 @@ class ButtonsGrid(QGridLayout):
             return
 
         self.display.setText(new_display_value)
+        self.display.setFocus()
 
     @Slot()
     def _clear(self):
@@ -243,7 +248,7 @@ class ButtonsGrid(QGridLayout):
             return
 
         if self._left is None:
-            self._left = float(display_text)
+            self._left = convert_to_number(display_text)
 
         self._op = text
         self.equation = f'{self._left} {self._op} ??'
@@ -252,16 +257,17 @@ class ButtonsGrid(QGridLayout):
     def _eq(self):
         display_text = self.display.text()
 
-        if not is_valid_number(display_text):
-            self._show_error('nada válido para acrescentar')
+        if not is_valid_number(display_text) or self._left is None:
+            self._show_error('Conta incompleta.')
             return
 
-        self._right = float(display_text)
+        self._right = convert_to_number(display_text)
         self.equation = f'{self._left} {self._op} {self._right}'
         result = 'error'
         try:
-            if '^' in self.equation and isinstance(self._left, float):
+            if '^' in self.equation and isinstance(self._left, int | float):
                 result = math.pow(self._left, self._right)
+                result = convert_to_number(str(result))
             else:
                 result = eval(self.equation)
             self.info.setText(f'{self.equation} = {result}')
@@ -281,6 +287,10 @@ class ButtonsGrid(QGridLayout):
         msgBox = self.window.makeMsgBox()
         msgBox.setText(text)
         return msgBox
+
+    @Slot()
+    def _backspace(self):
+        self.display.backspace()
 
     def _show_error(self, text):
         msgBox = self._make_dialog(text)
